@@ -1,0 +1,139 @@
+import { useState } from 'react';
+import { Welcome }           from './screens/Welcome';
+import { Register }          from './screens/Register';
+import { Login }             from './screens/Login';
+import { VerifyCode }        from './screens/VerifyCode';
+import { Privacy }           from './screens/Privacy';
+import { QuestionBlock }     from './screens/QuestionBlock';
+import { Results }           from './screens/Results';
+import { ProfessionalSearch } from './screens/ProfessionalSearch';
+import { B1, DASS, B3 }      from './constants/questions';
+
+export default function App() {
+  const [step, setStep]         = useState('welcome');
+  const [prevStep, setPrevStep] = useState(null);
+  const [userData, setUserData] = useState({ phone: '' });
+  const [answers, setAnswers]   = useState({});
+
+  function go(next, back = null) {
+    setPrevStep(back ?? step);
+    setStep(next);
+  }
+
+  function mergeAnswers(patch) {
+    setAnswers(prev => ({ ...prev, ...patch }));
+  }
+
+  function reset() {
+    setAnswers({});
+    setUserData({ phone: '' });
+    setStep('welcome');
+  }
+
+  if (step === 'welcome') return (
+    <Welcome onNext={() => go('register')} />
+  );
+
+  if (step === 'register') return (
+    <Register
+      onNext={phone => {
+        setUserData({ phone });
+        go('verify', 'register');
+      }}
+      onLogin={() => go('login')}
+    />
+  );
+
+  if (step === 'login') return (
+    <Login
+      onNext={phone => {
+        setUserData({ phone });
+        go('verify', 'login');
+      }}
+      onRegister={() => go('register')}
+    />
+  );
+
+  if (step === 'verify') return (
+    <VerifyCode
+      phone={userData.phone}
+      onNext={() => {
+        // Pre-fill phone in B1 answers for convenience
+        mergeAnswers({ b1_5: userData.phone });
+        go('privacy', 'register');
+      }}
+      onBack={() => go(prevStep ?? 'register')}
+    />
+  );
+
+  if (step === 'privacy') return (
+    <Privacy
+      onNext={() => go('b1', 'privacy')}
+      onBack={() => go('verify', 'privacy')}
+    />
+  );
+
+  if (step === 'b1') return (
+    <QuestionBlock
+      key="b1"
+      questions={B1}
+      data={answers}
+      setData={mergeAnswers}
+      blockIndex={1}
+      totalBlocks={3}
+      pctStart={10}
+      pctEnd={35}
+      onFinish={() => go('dass', 'b1')}
+      onBack={() => go('privacy', 'b1')}
+    />
+  );
+
+  if (step === 'dass') return (
+    <QuestionBlock
+      key="dass"
+      questions={DASS}
+      data={answers}
+      setData={mergeAnswers}
+      blockIndex={2}
+      totalBlocks={3}
+      pctStart={35}
+      pctEnd={70}
+      onFinish={() => go('b3', 'dass')}
+      onBack={() => go('b1', 'dass')}
+    />
+  );
+
+  if (step === 'b3') return (
+    <QuestionBlock
+      key="b3"
+      questions={B3}
+      data={answers}
+      setData={mergeAnswers}
+      blockIndex={3}
+      totalBlocks={3}
+      pctStart={70}
+      pctEnd={100}
+      onFinish={() => go('results', 'b3')}
+      onBack={() => go('dass', 'b3')}
+    />
+  );
+
+  if (step === 'results') return (
+    <Results
+      data={answers}
+      userData={userData}
+      onProfessionals={() => go('professionals', 'results')}
+      onExit={reset}
+    />
+  );
+
+  if (step === 'professionals') return (
+    <ProfessionalSearch
+      userData={userData}
+      onBack={() => go('results', 'professionals')}
+      onExit={reset}
+    />
+  );
+
+  return null;
+}

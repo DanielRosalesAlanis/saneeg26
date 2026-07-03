@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+/* ── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --navy:            #002060;
+  --navy-80:         #1B3A7A;
+  --navy-light:      #F0F4F8;
+  --navy-mid:        #B7C4D1;
+  --option-bg:       #F0F4F8;
+  --option-selected: #B8CBEA;
+  --teal:            #00B4D8;
+  --teal-dark:       #0090AD;
+  --teal-light:      #E3F6FB;
+  --white:           #FFFFFF;
+  --bg:              #F8F9FA;
+  --text:            #002060;
+  --muted:           #6B7280;
+  --border:          #E2E8F0;
+  --surface:         #F8F9FA;
+  --error:           #EF4444;
+  --success:         #10B981;
+  --warn:            #F59E0B;
+
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--white);
+  color: var(--text);
+}
+
+#root {
+  width: 100vw;
+  height: 100dvh;
+  background: var(--white);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+button { cursor: pointer; }
+a { color: inherit; }
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.scroll-box {
+  scrollbar-width: thin;
+  scrollbar-color: var(--navy) transparent;
+}
+.scroll-box::-webkit-scrollbar { width: 8px; }
+.scroll-box::-webkit-scrollbar-track { background: transparent; }
+.scroll-box::-webkit-scrollbar-thumb {
+  background: var(--navy);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-box::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pop {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.anim-fadeup   { animation: fadeUp    0.45s cubic-bezier(.22,.68,0,1.2) both; }
+.anim-fadein   { animation: fadeIn    0.35s ease-out both; }
+.anim-slide    { animation: slideRight 0.4s cubic-bezier(.22,.68,0,1.2) both; }
+.anim-pop      { animation: pop       0.3s cubic-bezier(.22,.68,0,1.2) both; }
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
