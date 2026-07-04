@@ -67,7 +67,7 @@ export const B1 = [
   {
     id: 'b1_11',
     text: 'En los últimos 6 meses, ¿te han detectado algún trastorno mental?',
-    type: 'single',
+    type: 'multi',
     opts: ['Ninguno', 'Depresión', 'Ansiedad', 'Estrés', 'Esquizofrenia', 'TDAH', 'Bipolaridad', 'Otro'],
   },
   {
