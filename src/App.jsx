@@ -24,6 +24,18 @@ export default function App() {
     setAnswers(prev => ({ ...prev, ...patch }));
   }
 
+  async function saveRespuestas(finalAnswers) {
+    try {
+      await fetch('/api/respuestas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: userData.phone, answers: finalAnswers }),
+      });
+    } catch (err) {
+      console.error('No se pudieron guardar las respuestas:', err);
+    }
+  }
+
   function reset() {
     setAnswers({});
     setUserData({ phone: '' });
@@ -113,7 +125,10 @@ export default function App() {
       totalBlocks={3}
       pctStart={70}
       pctEnd={100}
-      onFinish={() => go('results', 'b3')}
+      onFinish={() => {
+        saveRespuestas(answers);
+        go('results', 'b3');
+      }}
       onBack={() => go('dass', 'b3')}
     />
   );
