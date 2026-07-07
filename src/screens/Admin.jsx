@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { C } from '../constants/colors';
+import { B1, DASS, B3 } from '../constants/questions';
+
+const QUESTION_TEXT = Object.fromEntries(
+  [...B1, ...DASS, ...B3].map(q => [q.id, q.text])
+);
+
+const BLOQUE_LABELS = { 1: 'Bloque 1 — Personal', 2: 'Bloque 2 — DASS-21', 3: 'Bloque 3 — Demográfico' };
 
 function LoginForm({ onSuccess }) {
   const [email, setEmail] = useState('');
@@ -27,9 +34,9 @@ function LoginForm({ onSuccess }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: C.bg }}>
+    <div style={{ display: 'flex', minHeight: '100%', alignItems: 'center', justifyContent: 'center', background: C.bg, padding: 20 }}>
       <form onSubmit={handleSubmit} style={{
-        width: 340, background: C.white, borderRadius: 16, padding: 32,
+        width: '100%', maxWidth: 340, background: C.white, borderRadius: 16, padding: 'clamp(20px, 6vw, 32px)',
         boxShadow: '0 10px 30px rgba(0,32,96,0.12)', display: 'flex', flexDirection: 'column', gap: 14,
       }}>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: C.navy, marginBottom: 6 }}>Acceso administrador</h1>
@@ -69,25 +76,90 @@ function LoginForm({ onSuccess }) {
   );
 }
 
-function RegistrosTable({ registros, onLogout }) {
+function RespuestasModal({ registro, onClose }) {
+  const bloques = [...registro.respuestas].sort((a, b) => a.bloque - b.bloque);
+
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: C.navy }}>Registros ({registros.length})</h1>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,32,96,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 50,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: C.white, borderRadius: 16, width: '100%', maxWidth: 560, maxHeight: '85vh',
+          overflowY: 'auto', padding: 'clamp(16px, 5vw, 24px)', boxShadow: '0 20px 50px rgba(0,32,96,0.25)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: C.navy }}>Respuestas de {registro.phone}</h2>
+            <p style={{ fontSize: 12, color: C.muted }}>{new Date(registro.created_at).toLocaleString('es-MX')}</p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Cerrar"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: C.muted, lineHeight: 1 }}
+          >
+            ×
+          </button>
+        </div>
+
+        {bloques.length === 0 && (
+          <p style={{ fontSize: 14, color: C.muted }}>Este usuario no tiene respuestas guardadas.</p>
+        )}
+
+        {bloques.map(b => (
+          <div key={b.bloque} style={{ marginBottom: 20 }}>
+            <h3 style={{
+              fontSize: 12, fontWeight: 700, color: C.navy, textTransform: 'uppercase',
+              letterSpacing: '0.4px', marginBottom: 10, opacity: 0.7,
+            }}>
+              {BLOQUE_LABELS[b.bloque] ?? `Bloque ${b.bloque}`}
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Object.entries(b.respuestas).map(([id, value]) => (
+                <div key={id} style={{ borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
+                  <p style={{ fontSize: 13, color: '#374151', marginBottom: 2 }}>
+                    {QUESTION_TEXT[id] ?? id}
+                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: C.navy }}>
+                    {Array.isArray(value) ? value.join(', ') : String(value)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RegistrosTable({ registros, onLogout }) {
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <div style={{ padding: 'clamp(16px, 4vw, 24px)', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <h1 style={{ fontSize: 'clamp(18px, 4vw, 22px)', fontWeight: 800, color: C.navy }}>Registros ({registros.length})</h1>
         <button
           onClick={onLogout}
-          style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${C.border}`, background: 'none', cursor: 'pointer', fontWeight: 600, color: C.muted }}
+          style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${C.border}`, background: 'none', cursor: 'pointer', fontWeight: 600, color: C.muted, flexShrink: 0 }}
         >
           Cerrar sesión
         </button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <div className="scroll-box" style={{ overflowX: 'auto', borderRadius: 12, border: `1px solid ${C.border}` }}>
+        <table style={{ width: '100%', minWidth: 680, borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ background: C.navyLight, textAlign: 'left' }}>
-              {['ID', 'Teléfono', 'Fecha', 'Depresión', 'Ansiedad', 'Estrés', 'Bloques guardados'].map(h => (
-                <th key={h} style={{ padding: '10px 12px', fontWeight: 700, color: C.navy }}>{h}</th>
+              {['ID', 'Teléfono', 'Fecha', 'Depresión', 'Ansiedad', 'Estrés', 'Respuestas'].map(h => (
+                <th key={h} style={{ padding: '10px 12px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -95,17 +167,33 @@ function RegistrosTable({ registros, onLogout }) {
             {registros.map(r => (
               <tr key={r.id} style={{ borderBottom: `1px solid ${C.border}` }}>
                 <td style={{ padding: '10px 12px' }}>{r.id}</td>
-                <td style={{ padding: '10px 12px' }}>{r.phone}</td>
-                <td style={{ padding: '10px 12px' }}>{new Date(r.created_at).toLocaleString('es-MX')}</td>
-                <td style={{ padding: '10px 12px' }}>{r.dass ? `${r.dass.depresion_score} (${r.dass.depresion_severidad})` : '—'}</td>
-                <td style={{ padding: '10px 12px' }}>{r.dass ? `${r.dass.ansiedad_score} (${r.dass.ansiedad_severidad})` : '—'}</td>
-                <td style={{ padding: '10px 12px' }}>{r.dass ? `${r.dass.estres_score} (${r.dass.estres_severidad})` : '—'}</td>
-                <td style={{ padding: '10px 12px' }}>{r.respuestas.map(b => b.bloque).sort().join(', ') || '—'}</td>
+                <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{r.phone}</td>
+                <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{new Date(r.created_at).toLocaleString('es-MX')}</td>
+                <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{r.dass ? `${r.dass.depresion_score} (${r.dass.depresion_severidad})` : '—'}</td>
+                <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{r.dass ? `${r.dass.ansiedad_score} (${r.dass.ansiedad_severidad})` : '—'}</td>
+                <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{r.dass ? `${r.dass.estres_score} (${r.dass.estres_severidad})` : '—'}</td>
+                <td style={{ padding: '10px 12px' }}>
+                  <button
+                    onClick={() => setSelected(r)}
+                    disabled={r.respuestas.length === 0}
+                    style={{
+                      padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${C.navy}`,
+                      background: 'none', color: C.navy, fontWeight: 600, fontSize: 12,
+                      cursor: r.respuestas.length === 0 ? 'not-allowed' : 'pointer',
+                      opacity: r.respuestas.length === 0 ? 0.4 : 1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Ver respuestas
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selected && <RespuestasModal registro={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
@@ -136,6 +224,12 @@ export function Admin() {
   }
 
   if (authed === null) return null;
-  if (!authed) return <LoginForm onSuccess={() => setAuthed(true)} />;
-  return <RegistrosTable registros={registros} onLogout={handleLogout} />;
+
+  return (
+    <div className="scroll-box" style={{ height: '100%', width: '100%', overflowY: 'auto' }}>
+      {!authed
+        ? <LoginForm onSuccess={() => setAuthed(true)} />
+        : <RegistrosTable registros={registros} onLogout={handleLogout} />}
+    </div>
+  );
 }
