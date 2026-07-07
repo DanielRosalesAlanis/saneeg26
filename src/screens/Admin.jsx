@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { C } from '../constants/colors';
 import { B1, DASS, B3 } from '../constants/questions';
+import { IconSearch } from '../components/Icons';
 
 const QUESTION_TEXT = Object.fromEntries(
   [...B1, ...DASS, ...B3].map(q => [q.id, q.text])
@@ -141,17 +142,38 @@ function RespuestasModal({ registro, onClose }) {
 
 function RegistrosTable({ registros, onLogout }) {
   const [selected, setSelected] = useState(null);
+  const [query, setQuery] = useState('');
+
+  const filtered = registros.filter(r =>
+    r.phone.replace(/\D/g, '').includes(query.replace(/\D/g, ''))
+  );
 
   return (
     <div style={{ padding: 'clamp(16px, 4vw, 24px)', maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <h1 style={{ fontSize: 'clamp(18px, 4vw, 22px)', fontWeight: 800, color: C.navy }}>Registros ({registros.length})</h1>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <h1 style={{ fontSize: 'clamp(18px, 4vw, 22px)', fontWeight: 800, color: C.navy }}>Registros ({filtered.length})</h1>
         <button
           onClick={onLogout}
           style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${C.border}`, background: 'none', cursor: 'pointer', fontWeight: 600, color: C.muted, flexShrink: 0 }}
         >
           Cerrar sesión
         </button>
+      </div>
+
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        border: `1.5px solid ${C.border}`, borderRadius: 10, padding: '10px 14px',
+        marginBottom: 16, maxWidth: 320, background: C.white,
+      }}>
+        <span style={{ display: 'flex', color: C.muted, flexShrink: 0 }}><IconSearch size={16} /></span>
+        <input
+          type="tel"
+          inputMode="numeric"
+          placeholder="Buscar por teléfono..."
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          style={{ border: 'none', outline: 'none', fontSize: 14, width: '100%', color: C.navy, background: 'transparent' }}
+        />
       </div>
 
       <div className="scroll-box" style={{ overflowX: 'auto', borderRadius: 12, border: `1px solid ${C.border}` }}>
@@ -164,7 +186,14 @@ function RegistrosTable({ registros, onLogout }) {
             </tr>
           </thead>
           <tbody>
-            {registros.map(r => (
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ padding: '16px 12px', textAlign: 'center', color: C.muted }}>
+                  No se encontraron registros con ese teléfono.
+                </td>
+              </tr>
+            )}
+            {filtered.map(r => (
               <tr key={r.id} style={{ borderBottom: `1px solid ${C.border}` }}>
                 <td style={{ padding: '10px 12px' }}>{r.id}</td>
                 <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{r.phone}</td>
