@@ -79,7 +79,7 @@ function downloadCSV(data, userData, scores) {
     ['estres_score', s], ['estres_severidad', sevS],
   ];
   const csv = rows.map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a_ = document.createElement('a');
   a_.href = url;
