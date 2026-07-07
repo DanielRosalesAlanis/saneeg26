@@ -4,7 +4,7 @@ import { scoreDASS } from '../constants/questions';
 import { HELP_LINES } from '../constants/mockData';
 import {
   IconSmile, IconFrown, IconHeart, IconUsers,
-  IconPhone, IconSearch, IconAlertTriangle, IconCheck,
+  IconPhone, IconSearch, IconAlertTriangle, IconDownload,
 } from '../components/Icons';
 
 const SEVERITY_COLORS = {
@@ -69,8 +69,28 @@ function ScoreCard({ label, score, severity, Icon }) {
   );
 }
 
+function downloadCSV(data, userData, scores) {
+  const { d, a, s, sevD, sevA, sevS } = scores;
+  const rows = [
+    ['pregunta', 'respuesta'],
+    ...Object.entries(data).map(([key, value]) => [key, Array.isArray(value) ? value.join(' | ') : value]),
+    ['depresion_score', d], ['depresion_severidad', sevD],
+    ['ansiedad_score', a], ['ansiedad_severidad', sevA],
+    ['estres_score', s], ['estres_severidad', sevS],
+  ];
+  const csv = rows.map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a_ = document.createElement('a');
+  a_.href = url;
+  a_.download = `resultados_${userData?.phone || 'saneeg'}.csv`;
+  a_.click();
+  URL.revokeObjectURL(url);
+}
+
 export function Results({ data, userData, onProfessionals, onExit }) {
-  const { d, a, s, sevD, sevA, sevS } = scoreDASS(data);
+  const scores = scoreDASS(data);
+  const { d, a, s, sevD, sevA, sevS } = scores;
   const { Icon, title, msg, color } = getOverallMessage(sevD, sevA, sevS);
 
   return (
@@ -112,33 +132,37 @@ export function Results({ data, userData, onProfessionals, onExit }) {
           </div>
         </div>
 
-        {/* WhatsApp CSV badge */}
-        <div style={{
-          padding: '14px 16px',
-          borderRadius: 12,
-          background: '#ECFDF5',
-          border: '1.5px solid #10B981',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 28,
-        }}>
+        {/* Descarga de resultados en CSV */}
+        <button
+          onClick={() => downloadCSV(data, userData, scores)}
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 12,
+            background: '#ECFDF5',
+            border: '1.5px solid #10B981',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 28,
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
             background: '#10B981', display: 'flex', alignItems: 'center',
             justifyContent: 'center', flexShrink: 0, color: C.white,
           }}>
-            <IconCheck size={18} strokeWidth={3} />
+            <IconDownload size={18} strokeWidth={2.4} />
           </div>
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#065F46' }}>Resultados listos</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#065F46' }}>Descargar resultados (CSV)</p>
             <p style={{ fontSize: 13, color: '#065F46', opacity: 0.8 }}>
-              {userData?.phone
-                ? `Se enviarán vía WhatsApp al +52 *** *** ${userData.phone.slice(-4)}`
-                : 'Archivo CSV listo para enviar por WhatsApp'}
+              Guarda tus respuestas y puntuaciones en tu dispositivo
             </p>
           </div>
-        </div>
+        </button>
 
         {/* Líneas de ayuda */}
         <h2 style={{ fontSize: 17, fontWeight: 800, color: C.navy, marginBottom: 14 }}>
@@ -186,19 +210,21 @@ export function Results({ data, userData, onProfessionals, onExit }) {
 
         {/* Action buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <button
-            onClick={onProfessionals}
-            style={{
-              width: '100%', maxWidth: 320, padding: '16px 40px', borderRadius: 9999,
-              background: C.teal, color: C.white,
-              fontSize: 16, fontWeight: 700, border: 'none',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            <IconSearch size={18} />
-            Buscar citas disponibles
-          </button>
+          {onProfessionals && (
+            <button
+              onClick={onProfessionals}
+              style={{
+                width: '100%', maxWidth: 320, padding: '16px 40px', borderRadius: 9999,
+                background: C.teal, color: C.white,
+                fontSize: 16, fontWeight: 700, border: 'none',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <IconSearch size={18} />
+              Buscar citas disponibles
+            </button>
+          )}
           <button
             onClick={onExit}
             style={{

@@ -9,6 +9,8 @@ import { Results }           from './screens/Results';
 import { ProfessionalSearch } from './screens/ProfessionalSearch';
 import { B1, DASS, B3 }      from './constants/questions';
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+
 export default function App() {
   const [step, setStep]         = useState('welcome');
   const [prevStep, setPrevStep] = useState(null);
@@ -50,7 +52,8 @@ export default function App() {
     <Register
       onNext={phone => {
         setUserData({ phone });
-        go('verify', 'register');
+        mergeAnswers({ b1_5: phone });
+        DEMO_MODE ? go('privacy', 'register') : go('verify', 'register');
       }}
       onLogin={() => go('login')}
     />
@@ -60,7 +63,8 @@ export default function App() {
     <Login
       onNext={phone => {
         setUserData({ phone });
-        go('verify', 'login');
+        mergeAnswers({ b1_5: phone });
+        DEMO_MODE ? go('privacy', 'login') : go('verify', 'login');
       }}
       onRegister={() => go('register')}
     />
@@ -69,11 +73,7 @@ export default function App() {
   if (step === 'verify') return (
     <VerifyCode
       phone={userData.phone}
-      onNext={() => {
-        // Pre-fill phone in B1 answers for convenience
-        mergeAnswers({ b1_5: userData.phone });
-        go('privacy', 'register');
-      }}
+      onNext={() => go('privacy', 'register')}
       onBack={() => go(prevStep ?? 'register')}
     />
   );
@@ -81,7 +81,7 @@ export default function App() {
   if (step === 'privacy') return (
     <Privacy
       onNext={() => go('b1', 'privacy')}
-      onBack={() => go('verify', 'privacy')}
+      onBack={() => go(DEMO_MODE ? (prevStep ?? 'register') : 'verify', 'privacy')}
     />
   );
 
@@ -137,12 +137,12 @@ export default function App() {
     <Results
       data={answers}
       userData={userData}
-      onProfessionals={() => go('professionals', 'results')}
+      onProfessionals={DEMO_MODE ? null : () => go('professionals', 'results')}
       onExit={reset}
     />
   );
 
-  if (step === 'professionals') return (
+  if (step === 'professionals' && !DEMO_MODE) return (
     <ProfessionalSearch
       userData={userData}
       onBack={() => go('results', 'professionals')}
