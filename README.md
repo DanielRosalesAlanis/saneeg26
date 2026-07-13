@@ -43,7 +43,10 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173`.
+Abre `http://localhost:5173`. Las llamadas a `/api/*` se redirigen (ver
+`vite.config.js`) al backend Spring Boot en `http://localhost:8080` — necesitas
+tenerlo corriendo en paralelo (repo [saneeg-backend](https://github.com/DanielRosalesAlanis/saneeg-backend))
+para que el cuestionario y el panel de administrador funcionen completos.
 
 ## Scripts disponibles
 
@@ -67,4 +70,7 @@ src/
 
 ## Despliegue
 
-El sitio se publica en Vercel automáticamente con cada push a `main` (integración directa GitHub ↔ Vercel, sin configuración adicional).
+El sitio se sirve desde un VPS de IONOS: `npm run build` genera `dist/`, que nginx
+sirve como estático en el mismo dominio que expone la API del backend Spring Boot
+(`saneeg-backend`) bajo `/api/*` — así el frontend y la API comparten origen y no
+hace falta configurar CORS en producción.
