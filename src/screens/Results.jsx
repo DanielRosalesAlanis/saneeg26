@@ -88,10 +88,22 @@ function downloadCSV(data, userData, scores) {
   URL.revokeObjectURL(url);
 }
 
-export function Results({ data, userData, onProfessionals, onExit }) {
-  const scores = scoreDASS(data);
+function toScores(resultado) {
+  if (!resultado) return null;
+  return {
+    d: resultado.depresionScore, sevD: resultado.depresionSeveridad,
+    a: resultado.ansiedadScore, sevA: resultado.ansiedadSeveridad,
+    s: resultado.estresScore, sevS: resultado.estresSeveridad,
+  };
+}
+
+export function Results({ data, userData, resultado, onProfessionals, onExit }) {
+  // El resultado que calculó y guardó el backend es la fuente de verdad —
+  // recalcular en el cliente solo como respaldo si por algún motivo no llegó.
+  const scores = toScores(resultado) ?? scoreDASS(data);
   const { d, a, s, sevD, sevA, sevS } = scores;
   const { Icon, title, msg, color } = getOverallMessage(sevD, sevA, sevS);
+  const esCritico = [sevD, sevA, sevS].some(sev => sev === 'Severo' || sev === 'Extremadamente severo');
 
   return (
     <div className="anim-fadeup" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -101,8 +113,12 @@ export function Results({ data, userData, onProfessionals, onExit }) {
         <h1 style={{ fontSize: 24, fontWeight: 800, color: C.navy, letterSpacing: '-0.5px', marginBottom: 4 }}>
           Fin del cuestionario
         </h1>
-        <p style={{ fontSize: 15, color: C.muted, marginBottom: 24 }}>
+        <p style={{ fontSize: 15, color: C.muted, marginBottom: 12 }}>
           Aquí están tus resultados del DASS-21.
+        </p>
+
+        <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, marginBottom: 24, fontStyle: 'italic' }}>
+          El DASS-21 es un instrumento de tamizaje, no un diagnóstico clínico. Solo un profesional de la salud mental puede evaluar e interpretar tu situación de forma completa.
         </p>
 
         {/* Score cards */}
@@ -165,6 +181,19 @@ export function Results({ data, userData, onProfessionals, onExit }) {
         </button>
 
         {/* Líneas de ayuda */}
+        {esCritico && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 12, marginBottom: 16,
+            background: '#FEF2F2', border: `1.5px solid ${C.error}`,
+          }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: '#991B1B', marginBottom: 2 }}>
+              No tienes que pasar por esto solo(a)
+            </p>
+            <p style={{ fontSize: 13, color: '#991B1B', lineHeight: 1.55 }}>
+              Tus resultados muestran niveles que ameritan hablar con alguien pronto. Las líneas de abajo son gratuitas y confidenciales — considera llamar hoy mismo.
+            </p>
+          </div>
+        )}
         <h2 style={{ fontSize: 17, fontWeight: 800, color: C.navy, marginBottom: 14 }}>
           Líneas de apoyo en México
         </h2>
@@ -176,8 +205,8 @@ export function Results({ data, userData, onProfessionals, onExit }) {
               gap: 12,
               padding: '14px 16px',
               borderRadius: 12,
-              background: C.surface,
-              border: `1.5px solid ${C.border}`,
+              background: esCritico ? '#FEF2F2' : C.surface,
+              border: `1.5px solid ${esCritico ? C.error : C.border}`,
             }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 10,

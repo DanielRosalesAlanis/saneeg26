@@ -45,7 +45,9 @@ export function Welcome({ onNext }) {
           maxWidth: 300,
         }}>
           Responde con honestidad. Este cuestionario es{' '}
-          <strong style={{ color: C.navy }}>anónimo y confidencial</strong>.
+          <strong style={{ color: C.navy }}>confidencial</strong> — tus
+          respuestas se guardan de forma segura y ligadas a tu número de
+          teléfono, solo para darte seguimiento a ti.
           Tus resultados te ayudarán a conocer tu estado emocional actual.
         </p>
       </div>
